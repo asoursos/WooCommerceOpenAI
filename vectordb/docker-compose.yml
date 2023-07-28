@@ -1,0 +1,31 @@
+version: '3.4'
+
+volumes:
+  pg-data:
+  backups:
+
+# https://stackoverflow.com/questions/60619659/postgres-mounting-volume-in-docker-permission-denied
+services:
+  db:
+    container_name: vectordb_container
+    image: ankane/pgvector
+    hostname: db_vector
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /pg-data
+    logging:
+      options:
+        tag: "{{.DaemonName}}(image={{.ImageName}};name={{.Name}};id={{.ID}})"
+    expose:
+      - "5433" # Publishes 5433 to other containers but NOT to host machine
+    ports:
+      - "5433:5433"
+    restart: unless-stopped
+    volumes:
+      - backups:/home/backups
+      - pg-data:/pg-data
+    command: -p 5433
+    
+
+    

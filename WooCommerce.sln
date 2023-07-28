@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33801.468
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wordpress", "wordpress", "{3580F7FC-51B2-4062-BF06-F71FE80B3A5D}"
+	ProjectSection(SolutionItems) = preProject
+		wordpress\docker-compose.yml = wordpress\docker-compose.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vectordb", "vectordb", "{D082D585-04D1-4EF5-BF97-8FB0F5493210}"
+	ProjectSection(SolutionItems) = preProject
+		vectordb\docker-compose.yml = vectordb\docker-compose.yml
+		vectordb\Dockerfile = vectordb\Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{10295498-9ED4-4726-B659-8EBA53C8166E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication2", "WebApplication2\WebApplication2.csproj", "{32AA7090-312C-430D-B8C3-D982EC2A3FF2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32AA7090-312C-430D-B8C3-D982EC2A3FF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32AA7090-312C-430D-B8C3-D982EC2A3FF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32AA7090-312C-430D-B8C3-D982EC2A3FF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32AA7090-312C-430D-B8C3-D982EC2A3FF2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3AA5C174-8E62-43C5-AC9B-832C0CD18CF2}
+	EndGlobalSection
+EndGlobal
