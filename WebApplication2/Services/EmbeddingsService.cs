@@ -1,6 +1,6 @@
 ﻿using Azure.AI.OpenAI;
 using Microsoft.Extensions.Options;
-using System.Text.RegularExpressions;
+using WebApplication2.Helpers;
 using WebApplication2.Models;
 
 namespace WebApplication2.Services;
@@ -22,7 +22,7 @@ public class EmbeddingsService : IEmbeddingsService
     public async Task<Embeddings> CreateAsync(EmbeddingsOptionsBuilder builder)
     {
         var options = builder.Build();
-        var response = await _client.GetEmbeddingsAsync("text-embedding-ada-002", options);
+        var response = await _client.GetEmbeddingsAsync(OpenAIModel.Ada002.GetDescription(), options);
         return response.Value;
     }
 }

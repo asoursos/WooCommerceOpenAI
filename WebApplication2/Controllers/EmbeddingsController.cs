@@ -29,11 +29,11 @@ public class EmbeddingsController : ControllerBase
             var dbItem = await db.Posts.FindAsync((long)item.id);
             if (dbItem == null)
             {
-                dbItem = new WoocommercePost { Id = (long)item.id.Value, Name = item.name };
+                dbItem = new WoocommercePost { Id = (long)item.id.Value };
                 await db.Posts.AddAsync(dbItem);
             }
             
-            await dbItem.UpdateVectorsAsync(embeddings, tokens, item.name, item.description);
+            await dbItem.UpdateAsync(embeddings, tokens, item.name, item.description);
 
             await db.SaveChangesAsync();
         }

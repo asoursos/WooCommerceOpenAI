@@ -105,11 +105,12 @@ public class WoocommercePost
     public EmbeddingData? NameEmbedding { get; set; }
     public EmbeddingData? DescriptionEmbedding { get; set; }
 
-    public async Task UpdateVectorsAsync(IEmbeddingsService embeddings,
+    public async Task UpdateAsync(IEmbeddingsService embeddings,
         ITokensService tokens,
         string name,
         string description)
     {
+        Name = name;
 
         var nameNormalizedText = tokens.Normalize(OpenAIModel.Ada002, name);
         var nameHashId = Hasher.CalculateDeterministicHash(nameNormalizedText);
