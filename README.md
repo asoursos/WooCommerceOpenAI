@@ -15,6 +15,10 @@ This is a simple WooCommerce plugin that uses OpenAI's Embeddings to search prod
 1. cd /vectordb
 2. Run `docker-compose up -d` to install postgresql
 
+### Configure OpenAI
+1. Generate OpenAI ApiKey `https://platform.openai.com/account/api-keys`
+2. Set appsettings.json or secrets.json accordingly
+
 ## Sync data between woocommerce and postgresql
 
 ### Prepare
