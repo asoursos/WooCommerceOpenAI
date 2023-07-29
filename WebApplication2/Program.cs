@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Pgvector;
 using WebApplication2.Data;
 using WebApplication2.Models;
 using WebApplication2.Services;
@@ -43,25 +42,9 @@ app.MapControllers();
 using(var scope = app.Services.CreateScope())
 {
     var ctx = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
-    //ctx.Database.EnsureDeleted();
+    ctx.Database.EnsureDeleted();
     //ctx.Database.EnsureCreated();
     ctx.Database.Migrate();
-
-    //ctx.Posts.Add(new Post { NameVector = new Vector(new float[] { 1, 1, 1 }) });
-    //ctx.Posts.Add(new Post { NameVector = new Vector(new float[] { 2, 2, 2 }) });
-    //ctx.Posts.Add(new Post { NameVector = new Vector(new float[] { 1, 1, 2 }) });
-    //ctx.SaveChanges();
-
-    //var embedding = new Vector(new float[] { 1, 1, 1 });
-    //var items = await ctx.Posts.FromSql($"SELECT * FROM woocommerce_posts ORDER BY embedding <-> {embedding} LIMIT 5").ToListAsync();
-    //foreach (Post item in items)
-    //{
-    //    if (item.NameVector != null)
-    //    {
-    //        Console.WriteLine(item.NameVector);
-    //    }
-    //}
 }
-
 
 app.Run();

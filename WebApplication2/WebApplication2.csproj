@@ -9,6 +9,7 @@
 
   <ItemGroup>
 	  <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.6" />
+	  <PackageReference Include="Hashids.net" Version="1.7.0" />
 
 	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">

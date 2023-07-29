@@ -26,34 +26,25 @@ public class EmbeddingsController : ControllerBase
 
         foreach (var item in products)
         {
-            var builder = new EmbeddingsOptionsBuilder()
-                .WithContent(item.name)
-                .WithContent(tokens.Normalize(OpenAIModel.Ada002, item.description));
-
-            var result = await embeddings.CreateAsync(builder);
-            if (result.Data.Any() == false || item.id.HasValue == false)
-            {
-                continue;
-            }
-
-            var nameVector = new Pgvector.Vector(result.Data.First().Embedding.ToArray());
-            var descVector = new Pgvector.Vector(result.Data.Last().Embedding.ToArray());
+            var result = await EmbeddingData.CreateAsync(embeddings, tokens, item.name, item.description);
+            var nameEmbedding = result[0];
+            var descriptionEmbedding = result[1];
 
             var dbItem = await db.Posts.FindAsync((long)item.id);
             if (dbItem == null)
             {
-                dbItem = new Post { Id = (long)item.id.Value, Name = item.name, NameVector = nameVector, DescriptionVector = descVector };
+                dbItem = new WoocommercePost { Id = (long)item.id.Value, Name = item.name, NameEmbedding = nameEmbedding, DescriptionEmbedding = descriptionEmbedding };
                 await db.Posts.AddAsync(dbItem);
             }
             else
             {
-                dbItem.NameVector = nameVector;
-                dbItem.DescriptionVector = descVector;
+                // todo: check if text hasnt changed with hashid.
+                dbItem.NameEmbedding = nameEmbedding;
+                dbItem.DescriptionEmbedding = descriptionEmbedding;
             }
 
             await db.SaveChangesAsync();
         }
-
 
         return Ok(products);
     }

@@ -22,7 +22,10 @@ namespace WebApplication2.Migrations
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
-                    name_vector = table.Column<Vector>(type: "vector(1536)", nullable: true)
+                    name_embedding_hash_id = table.Column<string>(type: "text", nullable: true),
+                    name_embedding_vector = table.Column<Vector>(type: "vector(1536)", nullable: true),
+                    description_embedding_hash_id = table.Column<string>(type: "text", nullable: true),
+                    description_embedding_vector = table.Column<Vector>(type: "vector(1536)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -30,9 +33,16 @@ namespace WebApplication2.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_woocommerce_posts_name_vector",
+                name: "ix_woocommerce_posts_description_embedding_vector",
                 table: "woocommerce_posts",
-                column: "name_vector")
+                column: "description_embedding_vector")
+                .Annotation("Npgsql:IndexMethod", "ivfflat")
+                .Annotation("Npgsql:IndexOperators", new[] { "vector_cosine_ops" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_woocommerce_posts_name_embedding_vector",
+                table: "woocommerce_posts",
+                column: "name_embedding_vector")
                 .Annotation("Npgsql:IndexMethod", "ivfflat")
                 .Annotation("Npgsql:IndexOperators", new[] { "vector_cosine_ops" });
         }

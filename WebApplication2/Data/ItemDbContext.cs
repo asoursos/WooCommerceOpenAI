@@ -6,6 +6,8 @@ using Pgvector.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using WebApplication2.Models;
+using WebApplication2.Services;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WebApplication2.Data;
 
@@ -38,7 +40,7 @@ public class ItemDbContext : DbContext
         _settings = options?.Value;
     }
 
-    public DbSet<Post> Posts { get; set; }
+    public DbSet<WoocommercePost> Posts { get; set; }
     public virtual DbSet<SearchResultItem> Search { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -64,15 +66,26 @@ public class ItemDbContext : DbContext
         modelBuilder.HasPostgresExtension("vector");
 
         // TODO set lists = 1
-        modelBuilder.Entity<Post>()
-            .HasIndex(i => i.NameVector)
-            .HasMethod("ivfflat")
-            .HasOperators("vector_cosine_ops");
+        modelBuilder.Entity<WoocommercePost>()
+            .ToTable("woocommerce_posts")
+            .OwnsOne(o => o.NameEmbedding, o =>
+            {
+                o.Property(a => a.Vector).HasColumnType("vector(1536)");
 
-        modelBuilder.Entity<Post>()
-            .HasIndex(i => i.DescriptionVector)
-            .HasMethod("ivfflat")
-            .HasOperators("vector_cosine_ops");
+                o.HasIndex(i => i.Vector)
+                  .HasMethod("ivfflat")
+                  .HasOperators("vector_cosine_ops");
+            });
+
+        modelBuilder.Entity<WoocommercePost>()
+            .OwnsOne(o => o.DescriptionEmbedding, o =>
+            {
+                o.Property(a => a.Vector).HasColumnType("vector(1536)");
+
+                o.HasIndex(i => i.Vector)
+                  .HasMethod("ivfflat")
+                  .HasOperators("vector_cosine_ops");
+            });
 
         modelBuilder.Entity<SearchResultItem>()
             .HasNoKey()
@@ -80,17 +93,52 @@ public class ItemDbContext : DbContext
     }
 }
 
-[Table("woocommerce_posts")]
-public class Post
+public class WoocommercePost
 {
     public long Id { get; set; }
 
     [StringLength(128)]
     public string? Name { get; set; }
 
-    [Column(TypeName = "vector(1536)")]
-    public Vector? NameVector { get; set; }
+    public EmbeddingData? NameEmbedding { get; set; }
+    public EmbeddingData? DescriptionEmbedding { get; set; }
+}
 
-    [Column(TypeName = "vector(1536)")]
-    public Vector? DescriptionVector { get; set; }
+public class EmbeddingData
+{
+    public string? HashId { get; set; }
+
+    public Vector? Vector { get; set; }
+
+    public static async Task<IList<EmbeddingData?>> CreateAsync(IEmbeddingsService embeddings, 
+        ITokensService tokens,
+        params string[] texts)
+    {
+        var hash = new HashidsNet.Hashids();
+        var builder = new EmbeddingsOptionsBuilder();
+
+        var hashes = new List<string>();
+        foreach (var item in texts)
+        {
+            var normalizedText = tokens.Normalize(OpenAIModel.Ada002, item);
+            var tokensIds = tokens.Encode(OpenAIModel.Ada002, normalizedText);
+            hashes.Add(hash.Encode(tokensIds));
+
+            builder.WithContent(normalizedText);
+        }
+
+        var resultEmbeddings = await embeddings.CreateAsync(builder);
+        var result = new List<EmbeddingData?>();
+        for (int i = 0; i < resultEmbeddings.Data.Count; i++)
+        {
+            var item = resultEmbeddings.Data[i];
+            result.Add(new EmbeddingData
+            {
+                HashId = hashes[i],
+                Vector = new Vector(item.Embedding.ToArray())
+            });
+        }
+
+        return result;
+    }
 }
