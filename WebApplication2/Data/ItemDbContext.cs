@@ -1,15 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Options;
-using Pgvector;
 using Pgvector.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using WebApplication2.Helpers;
 using WebApplication2.Models;
-using WebApplication2.Services;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace WebApplication2.Data;
 
@@ -27,10 +20,6 @@ public class DatabaseFactory : IDesignTimeDbContextFactory<ItemDbContext>
         return new ItemDbContext(optionsBuilder.Options, null);
     }
 }
-
-[Keyless]
-public record SearchResultItem(long Id, string Name, double NameSimilarity, double DescriptionSimilarity);
-
 
 public class ItemDbContext : DbContext
 {
@@ -93,73 +82,4 @@ public class ItemDbContext : DbContext
             .HasNoKey()
             .ToView(null);
     }
-}
-
-public class WoocommercePost
-{
-    public long Id { get; set; }
-
-    [StringLength(128)]
-    public string? Name { get; set; }
-
-    public EmbeddingData? NameEmbedding { get; set; }
-    public EmbeddingData? DescriptionEmbedding { get; set; }
-
-    public async Task UpdateAsync(IEmbeddingsService embeddings,
-        ITokensService tokens,
-        string name,
-        string description)
-    {
-        Name = name;
-
-        var nameNormalizedText = tokens.Normalize(OpenAIModel.Ada002, name);
-        var nameHashId = Hasher.CalculateDeterministicHash(nameNormalizedText);
-        var nameHasChanges = nameHashId != NameEmbedding?.HashId;
-
-        var descNormalizedText = tokens.Normalize(OpenAIModel.Ada002, description);
-        var descHashId = Hasher.CalculateDeterministicHash(descNormalizedText);
-        var descHasChanges = descHashId != DescriptionEmbedding?.HashId;
-        if (nameHasChanges == false && descHasChanges == false)
-        {
-            return;
-        }
-
-        var builder = new EmbeddingsOptionsBuilder();
-        if (nameHasChanges)
-        {
-            builder.WithContent(nameNormalizedText);
-        }
-
-        if (descHasChanges)
-        {
-            builder.WithContent(descNormalizedText);
-        }
-
-        var resultEmbeddings = await embeddings.CreateAsync(builder);
-        if (nameHasChanges)
-        {
-            NameEmbedding = new EmbeddingData
-            {
-                HashId = nameHashId,
-                Vector = new Vector(resultEmbeddings.Data[0].Embedding.ToArray())
-            };
-        }
-
-        if (descHasChanges)
-        {
-            var index = nameHasChanges ? 1 : 0;
-            DescriptionEmbedding = new EmbeddingData
-            {
-                HashId = descHashId,
-                Vector = new Vector(resultEmbeddings.Data[index].Embedding.ToArray())
-            };
-        }
-    }
-}
-
-public class EmbeddingData
-{
-    public ulong HashId { get; set; }
-
-    public Vector Vector { get; set; }
 }

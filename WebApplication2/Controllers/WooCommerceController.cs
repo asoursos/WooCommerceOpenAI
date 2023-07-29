@@ -1,5 +1,4 @@
-﻿using Azure.AI.OpenAI;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
@@ -9,6 +8,7 @@ using WebApplication2.Services;
 namespace WebApplication2.Controllers;
 
 public record SearchRequest(string? Term, float Threshold = 0.78f, int Limit = 5);
+
 [ApiController]
 [Route("[controller]")]
 public class WooCommerceController : ControllerBase
