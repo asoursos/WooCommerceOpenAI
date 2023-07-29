@@ -26,22 +26,14 @@ public class EmbeddingsController : ControllerBase
 
         foreach (var item in products)
         {
-            var result = await EmbeddingData.CreateAsync(embeddings, tokens, item.name, item.description);
-            var nameEmbedding = result[0];
-            var descriptionEmbedding = result[1];
-
             var dbItem = await db.Posts.FindAsync((long)item.id);
             if (dbItem == null)
             {
-                dbItem = new WoocommercePost { Id = (long)item.id.Value, Name = item.name, NameEmbedding = nameEmbedding, DescriptionEmbedding = descriptionEmbedding };
+                dbItem = new WoocommercePost { Id = (long)item.id.Value, Name = item.name };
                 await db.Posts.AddAsync(dbItem);
             }
-            else
-            {
-                // todo: check if text hasnt changed with hashid.
-                dbItem.NameEmbedding = nameEmbedding;
-                dbItem.DescriptionEmbedding = descriptionEmbedding;
-            }
+            
+            await dbItem.UpdateVectorsAsync(embeddings, tokens, item.name, item.description);
 
             await db.SaveChangesAsync();
         }

@@ -75,11 +75,12 @@ namespace WebApplication2.Migrations
                                 .HasColumnType("bigint")
                                 .HasColumnName("id");
 
-                            b1.Property<string>("HashId")
-                                .HasColumnType("text")
+                            b1.Property<decimal>("HashId")
+                                .HasColumnType("numeric(20,0)")
                                 .HasColumnName("description_embedding_hash_id");
 
                             b1.Property<Vector>("Vector")
+                                .IsRequired()
                                 .HasColumnType("vector(1536)")
                                 .HasColumnName("description_embedding_vector");
 
@@ -104,11 +105,12 @@ namespace WebApplication2.Migrations
                                 .HasColumnType("bigint")
                                 .HasColumnName("id");
 
-                            b1.Property<string>("HashId")
-                                .HasColumnType("text")
+                            b1.Property<decimal>("HashId")
+                                .HasColumnType("numeric(20,0)")
                                 .HasColumnName("name_embedding_hash_id");
 
                             b1.Property<Vector>("Vector")
+                                .IsRequired()
                                 .HasColumnType("vector(1536)")
                                 .HasColumnName("name_embedding_vector");
 

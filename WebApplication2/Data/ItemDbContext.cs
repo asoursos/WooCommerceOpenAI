@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Options;
 using Pgvector;
 using Pgvector.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using WebApplication2.Helpers;
 using WebApplication2.Models;
 using WebApplication2.Services;
 using static System.Net.Mime.MediaTypeNames;
@@ -102,43 +104,61 @@ public class WoocommercePost
 
     public EmbeddingData? NameEmbedding { get; set; }
     public EmbeddingData? DescriptionEmbedding { get; set; }
+
+    public async Task UpdateVectorsAsync(IEmbeddingsService embeddings,
+        ITokensService tokens,
+        string name,
+        string description)
+    {
+
+        var nameNormalizedText = tokens.Normalize(OpenAIModel.Ada002, name);
+        var nameHashId = Hasher.CalculateDeterministicHash(nameNormalizedText);
+        var nameHasChanges = nameHashId != NameEmbedding?.HashId;
+
+        var descNormalizedText = tokens.Normalize(OpenAIModel.Ada002, description);
+        var descHashId = Hasher.CalculateDeterministicHash(descNormalizedText);
+        var descHasChanges = descHashId != DescriptionEmbedding?.HashId;
+        if (nameHasChanges == false && descHasChanges == false)
+        {
+            return;
+        }
+
+        var builder = new EmbeddingsOptionsBuilder();
+        if (nameHasChanges)
+        {
+            builder.WithContent(nameNormalizedText);
+        }
+
+        if (descHasChanges)
+        {
+            builder.WithContent(descNormalizedText);
+        }
+
+        var resultEmbeddings = await embeddings.CreateAsync(builder);
+        if (nameHasChanges)
+        {
+            NameEmbedding = new EmbeddingData
+            {
+                HashId = nameHashId,
+                Vector = new Vector(resultEmbeddings.Data[0].Embedding.ToArray())
+            };
+        }
+
+        if (descHasChanges)
+        {
+            var index = nameHasChanges ? 1 : 0;
+            DescriptionEmbedding = new EmbeddingData
+            {
+                HashId = descHashId,
+                Vector = new Vector(resultEmbeddings.Data[index].Embedding.ToArray())
+            };
+        }
+    }
 }
 
 public class EmbeddingData
 {
-    public string? HashId { get; set; }
+    public ulong HashId { get; set; }
 
-    public Vector? Vector { get; set; }
-
-    public static async Task<IList<EmbeddingData?>> CreateAsync(IEmbeddingsService embeddings, 
-        ITokensService tokens,
-        params string[] texts)
-    {
-        var hash = new HashidsNet.Hashids();
-        var builder = new EmbeddingsOptionsBuilder();
-
-        var hashes = new List<string>();
-        foreach (var item in texts)
-        {
-            var normalizedText = tokens.Normalize(OpenAIModel.Ada002, item);
-            var tokensIds = tokens.Encode(OpenAIModel.Ada002, normalizedText);
-            hashes.Add(hash.Encode(tokensIds));
-
-            builder.WithContent(normalizedText);
-        }
-
-        var resultEmbeddings = await embeddings.CreateAsync(builder);
-        var result = new List<EmbeddingData?>();
-        for (int i = 0; i < resultEmbeddings.Data.Count; i++)
-        {
-            var item = resultEmbeddings.Data[i];
-            result.Add(new EmbeddingData
-            {
-                HashId = hashes[i],
-                Vector = new Vector(item.Embedding.ToArray())
-            });
-        }
-
-        return result;
-    }
+    public Vector Vector { get; set; }
 }

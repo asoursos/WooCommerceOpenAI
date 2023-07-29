@@ -22,9 +22,9 @@ namespace WebApplication2.Migrations
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
-                    name_embedding_hash_id = table.Column<string>(type: "text", nullable: true),
+                    name_embedding_hash_id = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
                     name_embedding_vector = table.Column<Vector>(type: "vector(1536)", nullable: true),
-                    description_embedding_hash_id = table.Column<string>(type: "text", nullable: true),
+                    description_embedding_hash_id = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
                     description_embedding_vector = table.Column<Vector>(type: "vector(1536)", nullable: true)
                 },
                 constraints: table =>

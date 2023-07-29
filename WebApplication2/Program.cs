@@ -42,7 +42,7 @@ app.MapControllers();
 using(var scope = app.Services.CreateScope())
 {
     var ctx = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
-    ctx.Database.EnsureDeleted();
+    //ctx.Database.EnsureDeleted();
     //ctx.Database.EnsureCreated();
     ctx.Database.Migrate();
 }
