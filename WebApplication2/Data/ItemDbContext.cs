@@ -13,7 +13,7 @@ public class DatabaseFactory : IDesignTimeDbContextFactory<ItemDbContext>
         var connectionString = "Host=127.0.0.1;Port=5433;Username=postgres;Password=postgres;Database=dbvector-design";
 
         var optionsBuilder = new DbContextOptionsBuilder<ItemDbContext>();
-        optionsBuilder.UseNpgsql(connectionString, o => o.UseVector()).UseSnakeCaseNamingConvention()
+        ItemDbContext.UseMyNpgsql(optionsBuilder, connectionString)
             .EnableDetailedErrors()
             .EnableSensitiveDataLogging();
 
@@ -48,13 +48,20 @@ public class ItemDbContext : DbContext
             };
 
             var connString = builder.ConnectionString;
-            optionsBuilder.UseNpgsql(connString, o => o.UseVector()).UseSnakeCaseNamingConvention();
+            UseMyNpgsql(optionsBuilder, connString);
         }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // https://github.com/pgvector/pgvector-dotnet
         modelBuilder.HasPostgresExtension("vector");
+
+        // https://www.hmijalski.com/posts/ef-core-fuzzy-search/
+        modelBuilder.HasPostgresExtension("fuzzystrmatch");
+
+        // https://www.freecodecamp.org/news/fuzzy-string-matching-with-postgresql/
+        modelBuilder.HasPostgresExtension("pg_trgm");
 
         // TODO set lists = 1
         modelBuilder.Entity<WoocommercePost>()
@@ -81,5 +88,14 @@ public class ItemDbContext : DbContext
         modelBuilder.Entity<SearchResultItem>()
             .HasNoKey()
             .ToView(null);
+    }
+
+    internal static DbContextOptionsBuilder UseMyNpgsql(DbContextOptionsBuilder optionsBuilder, string connectionString)
+    {
+        return optionsBuilder.UseNpgsql(connectionString, o =>
+        {
+            o.UseVector();
+            //o.UseFuzzyStringMatch();
+        }).UseSnakeCaseNamingConvention();
     }
 }
