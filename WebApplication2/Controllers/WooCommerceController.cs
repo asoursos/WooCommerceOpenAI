@@ -8,6 +8,7 @@ using WebApplication2.Services;
 namespace WebApplication2.Controllers;
 
 public record SearchRequest(string? Term, float Threshold = 0.78f, int Limit = 5);
+public record FuzzySearchRequest(string? Term, int Limit = 5);
 
 [ApiController]
 [Route("[controller]")]
@@ -45,6 +46,26 @@ public class WooCommerceController : ControllerBase
             new NpgsqlParameter("@match_count", NpgsqlDbType.Integer) { Value = request.Limit },
         };
         var items = await db.Search.FromSqlRaw($"SELECT id, name, name_similarity, description_similarity from match_posts(@query_embedding, @match_threshold, @match_count)", parameters).ToArrayAsync();
+
+        return Ok(items);
+    }
+
+    [Route("search/similarity")]
+    [HttpGet]
+    public async Task<IActionResult> FuzzySearchAsync([FromServices] ItemDbContext db,
+        [FromQuery] FuzzySearchRequest? request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Term)
+            || request.Limit < 1)
+        {
+            return BadRequest();
+        }
+
+        var parameters = new NpgsqlParameter[] {
+            new NpgsqlParameter("@query_term", NpgsqlDbType.Text) { Value = request.Term },
+            new NpgsqlParameter("@match_count", NpgsqlDbType.Integer) { Value = request.Limit },
+        };
+        var items = await db.FuzzySearch.FromSqlRaw($"SELECT id, name, name_similarity from match_posts_similarity(@query_term, @match_count)", parameters).ToArrayAsync();
 
         return Ok(items);
     }

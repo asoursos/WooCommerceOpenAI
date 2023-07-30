@@ -33,6 +33,7 @@ public class ItemDbContext : DbContext
 
     public DbSet<WoocommercePost> Posts { get; set; }
     public virtual DbSet<SearchResultItem> Search { get; set; }
+    public virtual DbSet<FuzzySearchResultItem> FuzzySearch { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -86,6 +87,10 @@ public class ItemDbContext : DbContext
             });
 
         modelBuilder.Entity<SearchResultItem>()
+            .HasNoKey()
+            .ToView(null);
+
+        modelBuilder.Entity<FuzzySearchResultItem>()
             .HasNoKey()
             .ToView(null);
     }
