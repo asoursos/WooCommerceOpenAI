@@ -1,5 +1,5 @@
 # WooCommerce with OpenAI
-This is a simple WooCommerce plugin that uses OpenAI's Embeddings to search products.
+This is a simple web api that uses OpenAI's Embeddings to search woocommerce products in a Postgresql database.
 
 ## Installation
 
