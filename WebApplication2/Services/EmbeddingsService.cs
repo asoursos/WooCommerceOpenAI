@@ -22,7 +22,7 @@ public class EmbeddingsService : IEmbeddingsService
     public async Task<Embeddings> CreateAsync(EmbeddingsOptionsBuilder builder)
     {
         var options = builder.Build();
-        var response = await _client.GetEmbeddingsAsync(OpenAIModel.Ada002.GetDescription(), options);
+        var response = await _client.GetEmbeddingsAsync(options);
         return response.Value;
     }
 }
@@ -34,7 +34,7 @@ public class EmbeddingsOptionsBuilder
 
     public EmbeddingsOptionsBuilder()
     {
-        _options = new EmbeddingsOptions(new List<string>());
+        _options = new EmbeddingsOptions(OpenAIModel.Ada002.GetDescription(), new List<string>());
     }
 
     public EmbeddingsOptionsBuilder WithContent(string text)
