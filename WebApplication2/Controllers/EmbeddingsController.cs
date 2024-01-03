@@ -21,10 +21,11 @@ public class EmbeddingsController : ControllerBase
     public async Task<IActionResult> SyncAsync([FromServices] ItemDbContext db,
         [FromServices] ITokensService tokens,
         [FromServices] IEmbeddingsService embeddings,
-        [FromServices] IWooCommerceService wooCommerce)
+        [FromServices] IWooCommerceService wooCommerce,
+        [FromBody] long[]? ids = null)
     {
-        var products = await wooCommerce.GetProductsAsync();
-
+        var products = await wooCommerce.GetProductsAsync(ids);
+        
         foreach (var item in products)
         {
             var dbItem = await db.Posts.FindAsync((long)item.id);
@@ -33,13 +34,18 @@ public class EmbeddingsController : ControllerBase
                 dbItem = new WoocommercePost { Id = (long)item.id.Value };
                 await db.Posts.AddAsync(dbItem);
             }
-            
+
             await dbItem.UpdateAsync(embeddings, tokens, item.name, item.description);
 
             await db.SaveChangesAsync();
         }
 
         return Ok(products);
+    }
+
+    private static async Task<IList<WooCommerceNET.WooCommerce.v3.Product>> GetProducts(IWooCommerceService wooCommerce)
+    {
+        return await wooCommerce.GetProductsAsync();
     }
 
     [Route("")]
