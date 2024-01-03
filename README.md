@@ -27,4 +27,4 @@ This is a simple WooCommerce plugin that uses OpenAI's Embeddings to search prod
 3. Invoke `/api/embeddings/sync` to create products posts embeddings
 
 ### Search
-1. Invoke `/api/woocommerce/search?term=green`
+1. Invoke `/api/woocommerce/search?term=belt`
