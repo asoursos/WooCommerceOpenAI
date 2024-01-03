@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using NpgsqlTypes;
 using WebApplication2.Data;
+using WebApplication2.Models;
 using WebApplication2.Services;
 
 namespace WebApplication2.Controllers;
@@ -26,6 +28,7 @@ public class WooCommerceController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> SearchAsync([FromServices] ItemDbContext db,
         [FromServices] IEmbeddingsService embeddings,
+        [FromServices] IOptions<WooCommerceSettings> options,
         [FromQuery] SearchRequest? request)
     {
         if (string.IsNullOrWhiteSpace(request?.Term)
@@ -46,9 +49,18 @@ public class WooCommerceController : ControllerBase
             new NpgsqlParameter("@match_count", NpgsqlDbType.Integer) { Value = request.Limit },
         };
         var items = await db.Search.FromSqlRaw($"SELECT id, name, name_similarity, description_similarity from match_posts(@query_embedding, @match_threshold, @match_count)", parameters).ToArrayAsync();
+        
+        var apiUri = new Uri(options.Value.ApiUrl!);
+        var woocommerceUrl = apiUri.OriginalString.Replace(apiUri.PathAndQuery, "");
+        var searchResult = items
+            .OrderByDescending(x => Math.Max(x.NameSimilarity, x.DescriptionSimilarity))
+            .Select(x => new SearchResult(x, new Uri($"{woocommerceUrl}?page_id={x.Id}")))
+            .ToArray();
 
-        return Ok(items);
+        return Ok(searchResult);
     }
+
+    public record SearchResult(SearchResultItem Item, Uri Link);
 
     [Route("search/similarity")]
     [HttpGet]
