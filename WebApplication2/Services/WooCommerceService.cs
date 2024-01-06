@@ -10,7 +10,7 @@ namespace WebApplication2.Services;
 
 public interface IWooCommerceService
 {
-    Task<IList<Product>> GetProductsAsync();
+    Task<IList<Product>> GetProductsAsync(params long[]? ids);
 }
 
 public class WooCommerceService : IWooCommerceService
@@ -26,12 +26,20 @@ public class WooCommerceService : IWooCommerceService
         _api = new RestAPI(url, key, secret);
     }
 
-    public async Task<IList<Product>> GetProductsAsync()
+    public async Task<IList<Product>> GetProductsAsync(params long[]? ids)
     {
         WCObject wc = new WCObject(_api);
 
         //Use below code for WCObject only if you would like to have different CultureInfo
         // WCObject wc = new WCObject(_api, CultureInfo.GetCultureInfo("en-US"));
+
+        if (ids?.Length > 0)
+        {
+            return await wc.Product.GetAll(new Dictionary<string, string>()
+            {
+                { "include", string.Join(",", ids) }
+            });
+        }
 
         //Get all products
         return await wc.Product.GetAll();
